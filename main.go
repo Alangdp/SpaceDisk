@@ -8,7 +8,12 @@ import (
 	"time"
 )
 
-func readFiles(rootPath string) [][]string {
+// ReadFiles return all files from rootPath recursively.
+//
+// Example case use:
+//
+//	ReadFiles("C:/")
+func ReadFiles(rootPath string) [][]string {
 	stringArray := [][]string{}
 
 	files, err := os.ReadDir(rootPath)
@@ -20,16 +25,13 @@ func readFiles(rootPath string) [][]string {
 
 	for _, file := range files {
 		if file.IsDir() {
-			// fmt.Println("Directory: ", rootPath)
-			stringArray = append(stringArray, readFiles(rootPath+"/"+file.Name())...)
+			stringArray = append(stringArray, ReadFiles(rootPath+"/"+file.Name())...)
 		} else {
 			_, err := os.Stat(rootPath + "/" + file.Name())
 			if err != nil {
 				fmt.Println("Error reading file info", rootPath)
 				return stringArray
 			}
-
-			// fmt.Println("File: ", fileInfo.Name(), fileInfo.Size())
 		}
 
 		stringArray = append(stringArray, []string{rootPath, file.Name()})
@@ -40,7 +42,7 @@ func readFiles(rootPath string) [][]string {
 
 func main() {
 	startTime := time.Now()
-	files := readFiles("C:/")
+	files := ReadFiles("C:/")
 	fmt.Println("Time taken: ", time.Since(startTime))
 	fmt.Println("Files: ", len(files))
 }
