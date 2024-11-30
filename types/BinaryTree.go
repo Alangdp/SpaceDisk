@@ -1,4 +1,4 @@
-package main
+package types
 
 import "fmt"
 
@@ -8,11 +8,13 @@ type BynaryTree struct {
 	Right *BynaryTree
 }
 
-func inorder_traversal(root *BynaryTree) {
+// Inorder_traversal function
+// Inorder traversal is a type of depth-first traversal that visits the left branch, then the current node, and finally, the right branch of a tree.
+func Inorder_traversal(root *BynaryTree) {
 	if root != nil {
-		inorder_traversal(root.Left)
+		Inorder_traversal(root.Left)
 		fmt.Println(root.Value)
-		inorder_traversal(root.Right)
+		Inorder_traversal(root.Right)
 	}
 }
 
@@ -49,15 +51,4 @@ func Insert(root *BynaryTree, data int8) *BynaryTree {
 			}
 		}
 	}
-}
-
-func main() {
-	array := [15]int8{34, 84, 15, 0, 2, 99, 79, 9, 88, 89, 18, 31, 39, 100, 101}
-	var root *BynaryTree
-
-	for i := 0; i < len(array); i++ {
-		root = Insert(root, array[i])
-	}
-
-	inorder_traversal(root)
 }
