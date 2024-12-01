@@ -15,5 +15,11 @@ Escolhi GO para desenvolver esse projeto, por 2 principais motivos. Primeiro gos
 Ao iniciar o projeto tive alguns problemas iniciais nessa seção irei relatalos, primeiro comecei a estudar árvores bínarias e pelo conceito me surgiu a ideia que o sistema de arquivos é a mesma coisa so que mais complexo. 
 
 - Não conhecia B Tress (Implementação).
-- Go não é bom com telas.
+- Go não é bom com telas (Utiilizado raylib).
 
+# Otimizaçãdo do executável
+
+- Remover os símbolos de depuração.
+> go build -ldflags="-s -w" main.go
+- Compactar o executável
+> upx --best --lzma myprogram.exe
