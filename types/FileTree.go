@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"sort"
 	"spacedisk/core"
@@ -102,7 +101,7 @@ func PrintDirectoryTree(root *Node) {
 //
 //	sortedKeys := getSortedKeys(nodes)
 //	fmt.Println(sortedKeys)
-func getSortedKeys(nodes map[uint32]*Node) []uint32 {
+func GetSortedKeys(nodes map[uint32]*Node) []uint32 {
 	keys := make([]uint32, 0, len(nodes))
 	for k := range nodes {
 		keys = append(keys, k)
@@ -120,7 +119,7 @@ func getSortedKeys(nodes map[uint32]*Node) []uint32 {
 //
 //	ext := getFileTypeExtension("file.txt")
 //	fmt.Println(ext) // Output: "\033[90m.txt\033[0m"
-func getFileTypeExtension(filename string) string {
+func GetFileTypeExtension(filename string) string {
 	ext := filepath.Ext(filename)
 	if ext != "" {
 		return "\033[90m" + ext + "\033[0m" // Gray color for extension
@@ -154,41 +153,6 @@ func MakeTree(data *DirectoryInfo, previous *Node) *Node {
 		Childs:   make(map[uint32]*Node),
 		Previous: previous,
 	}
-}
-
-// Search traverses the tree starting from the root node and attempts to find a node
-// that matches the given path. The path is split by '/' and each segment is hashed
-// and used to find the corresponding child node.
-//
-// The function returns the found node, its parent node, and a boolean indicating
-// whether the node was found. If the path does not exist, it returns nil, the
-// parent node, and false.
-//
-// Example:
-//
-//	node, parent, found := Search(root, "path/to/node")
-//	if found {
-//	    fmt.Println("Node found:", node)
-//	} else {
-//	    fmt.Println("Node not found, parent:", parent)
-//	}
-func Search(root *Node, matchPath string) (*Node, *Node, bool) {
-	pathSplited := strings.Split(matchPath, "/")[1:]
-	temp := root
-
-	for i := 0; i < len(pathSplited); i++ {
-		hash := core.Fnv1aHash(strings.ToLower(pathSplited[i]))
-
-		// Search on the map using a string hash
-		path, exists := temp.Childs[hash]
-		if !exists {
-			return nil, temp, false
-		}
-
-		temp = path
-	}
-
-	return temp, temp, true
 }
 
 // AppendChild adds a new child node to the root node, using the provided data
@@ -227,39 +191,39 @@ func AppendChild(root *Node, data *DirectoryInfo) *Node {
 //
 //	AppendFullPath(root, "path/to/directory")
 //	fmt.Println("Updated tree with new nodes")
-func AppendFullPath(root *Node, path string) *Node {
-	// Format path
-	pathFormatted := filepath.ToSlash(path)
+func AppendFullPath(root *Node, data *DirectoryInfo) *Node {
+	pathFormatted := filepath.ToSlash(data.Path)
 	pathSplited := strings.Split(pathFormatted, "/")
 
 	temp := root
-	for i := 0; i < len(pathSplited); i++ {
-		subPath := strings.Join(pathSplited[0:i+1], "/")
+	currentPath := ""
 
-		// Validate if path has been present
-		founded, parent, exists := Search(temp, subPath)
+	for i, segment := range pathSplited {
+		// Construir o caminho acumulativo
+		if i > 0 {
+			currentPath += "/"
+		}
+		currentPath += segment
 
-		// If exists node on the tree, go to the next one
-		if exists {
-			temp = founded
-			continue
+		// Calcular hash
+		hash := core.Fnv1aHash(strings.ToLower(segment))
+
+		// Criar nó, se não existir
+		if _, exists := temp.Childs[hash]; !exists {
+			newNode := &Node{
+				Data: &DirectoryInfo{
+					Filename: segment,
+					Path:     currentPath,
+					Size:     data.Size,
+					IsFolder: data.IsFolder,
+				},
+				Childs: make(map[uint32]*Node),
+			}
+			temp.Childs[hash] = newNode
 		}
 
-		pathInfo, err := os.Stat(subPath)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		data := &DirectoryInfo{
-			Filename: pathInfo.Name(),
-			Path:     subPath,
-			Size:     pathInfo.Size(),
-			IsFolder: pathInfo.IsDir(),
-		}
-
-		newNode := AppendChild(parent, data)
-		temp = newNode
+		// Avançar para o próximo nó
+		temp = temp.Childs[hash]
 	}
 
 	return root

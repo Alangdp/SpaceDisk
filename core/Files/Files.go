@@ -22,18 +22,23 @@ func ReadFiles(root *types.Node, rootPath string) *types.Node {
 		return root
 	}
 
-	// Percorrer os arquivos e diretórios encontrados
 	for _, file := range files {
 		filePath := filepath.Join(rootPath, file.Name())
 
+		// Adicionar informações do arquivo/diretório ao nó
+		info, _ := file.Info()
+		data := &types.DirectoryInfo{
+			Filename: info.Name(),
+			Path:     filePath,
+			Size:     info.Size(),
+			IsFolder: file.IsDir(),
+		}
+
+		types.AppendFullPath(root, data)
+
+		// Recursão para diretórios
 		if file.IsDir() {
-			// Adiciona o diretório à árvore e continua a exploração recursiva
-			newNode := types.AppendFullPath(root, filePath)
-			// Recursivamente lê os arquivos do diretório
-			ReadFiles(newNode, filePath)
-		} else {
-			// Adiciona o arquivo à árvore
-			types.AppendFullPath(root, filePath)
+			ReadFiles(root, filePath)
 		}
 	}
 
