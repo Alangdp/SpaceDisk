@@ -16,7 +16,10 @@ func main() {
 	root := types.MakeTree(data, nil)
 
 	start := time.Now()
-	core.ReadFiles(root, "C://")
+	node := core.ReadFiles(root, "C:\\")
+
+	types.PrintDirectoryTree(node)
+	
 	elapsed := time.Since(start)
 	fmt.Println(elapsed)
 }
